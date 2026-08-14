@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.emadgh.pfriend.ui.screens.*
 
@@ -53,7 +54,7 @@ private fun MainShell(vm: PFriendViewModel) {
                 is Destination.CircleDetail -> CircleDetailScreen(vm.selectedCircle, vm.loading, { vm.navigate(Destination.Circles) }, vm::addCircleMember) { vm.navigate(Destination.Compare(d.id)) }
             }
             vm.error?.takeIf { topLevel }?.let { message ->
-                Snackbar(Modifier.padding(bottom = androidx.compose.ui.unit.dp(78))) { Text(message) }
+                Snackbar(Modifier.padding(bottom = 78.dp)) { Text(message) }
             }
         }
     }

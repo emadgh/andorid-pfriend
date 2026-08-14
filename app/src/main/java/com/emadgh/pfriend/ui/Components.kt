@@ -13,12 +13,26 @@ import com.emadgh.pfriend.model.DailySummary
 import com.emadgh.pfriend.model.Entry
 
 @Composable
-fun Page(title: String, onBack: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
+fun Page(
+    title: String,
+    onBack: (() -> Unit)? = null,
+    headerModifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (onBack != null) TextButton(onClick = onBack) { Text("‹ Back") }
-            Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Surface(
+            modifier = Modifier.fillMaxWidth().then(headerModifier),
+            shape = RoundedCornerShape(20.dp),
+            tonalElevation = 1.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (onBack != null) TextButton(onClick = onBack) { Text("‹ Back") }
+                Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            }
         }
         Spacer(Modifier.height(12.dp))
         content()
@@ -50,7 +64,11 @@ private fun StatCard(label: String, value: String, modifier: Modifier = Modifier
 }
 
 @Composable
-fun EntryRow(entry: Entry, onClick: (() -> Unit)? = null) {
+fun EntryRow(
+    entry: Entry,
+    onClick: (() -> Unit)? = null,
+    motionKey: SharedMotionKey? = null
+) {
     val title = entry.displayName ?: entry.username ?: "User"
     val value = when (entry.type) {
         "water" -> "${entry.amount?.toInt() ?: 0} ml water"
@@ -59,9 +77,13 @@ fun EntryRow(entry: Entry, onClick: (() -> Unit)? = null) {
         "bowel" -> "Bowel movement${entry.label?.let { " · $it" } ?: ""}"
         else -> entry.type
     }
+    val sharedModifier = if (motionKey != null) Modifier.materialSharedBounds(motionKey) else Modifier
+    val clickModifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier
+
     Surface(
-        modifier = Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
-        shape = RoundedCornerShape(16.dp), tonalElevation = 1.dp
+        modifier = Modifier.fillMaxWidth().then(sharedModifier).then(clickModifier),
+        shape = RoundedCornerShape(16.dp),
+        tonalElevation = 1.dp
     ) {
         Column(Modifier.padding(14.dp)) {
             Text(title, fontWeight = FontWeight.SemiBold)

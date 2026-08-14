@@ -18,11 +18,17 @@ sealed interface Destination {
     data object Home : Destination
     data object People : Destination
     data object Circles : Destination
-    data class Compare(val circleId: Long? = null) : Destination
+    data class Compare(val circleId: Long? = null, val circleName: String? = null) : Destination
     data object Profile : Destination
     data class QuickLog(val type: String) : Destination
-    data class UserDetail(val id: Long) : Destination
-    data class CircleDetail(val id: Long) : Destination
+    data class UserDetail(
+        val id: Long,
+        val sharedKey: SharedMotionKey,
+        val back: Destination,
+        val previewDisplayName: String = "",
+        val previewUsername: String = ""
+    ) : Destination
+    data class CircleDetail(val id: Long, val previewName: String = "") : Destination
 }
 
 class PFriendViewModel(private val session: SessionStore) : ViewModel() {
@@ -102,8 +108,18 @@ class PFriendViewModel(private val session: SessionStore) : ViewModel() {
             Destination.People -> loadPeople()
             Destination.Circles -> loadCircles()
             is Destination.Compare -> loadCompare(to.circleId)
-            is Destination.UserDetail -> loadUser(to.id)
-            is Destination.CircleDetail -> loadCircle(to.id)
+            is Destination.UserDetail -> {
+                if (selectedUser?.id != to.id) {
+                    selectedUser = null
+                    selectedUserDaily = DailySummary()
+                    selectedUserEntries = emptyList()
+                }
+                loadUser(to.id)
+            }
+            is Destination.CircleDetail -> {
+                if (selectedCircle?.circle?.id != to.id) selectedCircle = null
+                loadCircle(to.id)
+            }
             else -> Unit
         }
     }

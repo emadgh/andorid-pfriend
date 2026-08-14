@@ -10,15 +10,26 @@ import com.emadgh.pfriend.model.CircleDetail
 import com.emadgh.pfriend.ui.Page
 
 @Composable
-fun CircleDetailScreen(detail: CircleDetail?, loading: Boolean, onBack: () -> Unit, onAddMember: (String) -> Unit) {
+fun CircleDetailScreen(detail: CircleDetail?, loading: Boolean, onBack: () -> Unit, onAddMember: (String) -> Unit, onCompare: () -> Unit) {
     var username by remember { mutableStateOf("") }
     Page(detail?.circle?.name ?: "Circle", onBack) {
-        Text("Members", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold); Spacer(Modifier.height(8.dp))
+        Button(onClick = onCompare, modifier = Modifier.fillMaxWidth()) { Text("Compare members today") }
+        Spacer(Modifier.height(14.dp))
+        Text("Members", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(8.dp))
         detail?.members?.forEach { member ->
-            Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) { Column(Modifier.padding(14.dp)) { Text(member.displayName, fontWeight = FontWeight.SemiBold); Text("@${member.username}") } }
+            Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Column(Modifier.padding(14.dp)) {
+                    Text(member.displayName, fontWeight = FontWeight.SemiBold)
+                    Text("@${member.username}")
+                }
+            }
         }
-        Spacer(Modifier.height(16.dp)); Text("Add member by username"); Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(16.dp))
+        Text("Add member by username")
+        Spacer(Modifier.height(6.dp))
         OutlinedTextField(username, { username = it }, label = { Text("Username") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-        Spacer(Modifier.height(8.dp)); Button(onClick = { onAddMember(username); username = "" }, enabled = !loading && username.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Add member") }
+        Spacer(Modifier.height(8.dp))
+        Button(onClick = { onAddMember(username); username = "" }, enabled = !loading && username.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Add member") }
     }
 }

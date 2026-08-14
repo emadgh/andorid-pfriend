@@ -18,6 +18,7 @@ sealed interface Destination {
     data object Home : Destination
     data object People : Destination
     data object Circles : Destination
+    data class Compare(val circleId: Long? = null) : Destination
     data object Profile : Destination
     data class QuickLog(val type: String) : Destination
     data class UserDetail(val id: Long) : Destination
@@ -38,6 +39,7 @@ class PFriendViewModel(private val session: SessionStore) : ViewModel() {
     var feed by mutableStateOf<List<Entry>>(emptyList()); private set
     var people by mutableStateOf<List<User>>(emptyList()); private set
     var circles by mutableStateOf<List<Circle>>(emptyList()); private set
+    var comparison by mutableStateOf<List<ComparisonRow>>(emptyList()); private set
     var selectedUser by mutableStateOf<User?>(null); private set
     var selectedUserDaily by mutableStateOf(DailySummary()); private set
     var selectedUserEntries by mutableStateOf<List<Entry>>(emptyList()); private set
@@ -99,6 +101,7 @@ class PFriendViewModel(private val session: SessionStore) : ViewModel() {
             Destination.Home -> loadHome()
             Destination.People -> loadPeople()
             Destination.Circles -> loadCircles()
+            is Destination.Compare -> loadCompare(to.circleId)
             is Destination.UserDetail -> loadUser(to.id)
             is Destination.CircleDetail -> loadCircle(to.id)
             else -> Unit
@@ -114,6 +117,7 @@ class PFriendViewModel(private val session: SessionStore) : ViewModel() {
 
     fun loadPeople() = task { people = repo.users() }
     fun loadCircles() = task { circles = repo.circles() }
+    fun loadCompare(circleId: Long? = null) = task { comparison = repo.compare(circleId) }
 
     fun loadUser(id: Long) = task {
         selectedUser = repo.user(id)

@@ -59,6 +59,25 @@ class PFriendRepository(private val session: SessionStore) {
 
     fun toggleFollow(userId: Long): Boolean = api.post("follow_toggle", JSONObject().put("user_id", userId)).getBoolean("following")
 
+    fun compare(circleId: Long? = null): List<ComparisonRow> {
+        val params = circleId?.let { mapOf("circle_id" to it.toString()) } ?: emptyMap()
+        return api.get("compare", params).array("comparison").let { a ->
+            (0 until a.length()).map { i ->
+                val o = a.getJSONObject(i)
+                ComparisonRow(
+                    user = User(o.getLong("id"), o.getString("username"), o.getString("display_name")),
+                    summary = DailySummary(
+                        waterMl = o.optDouble("water_ml", 0.0),
+                        foodGrams = o.optDouble("food_g", 0.0),
+                        urineCount = o.optInt("urine_count", 0),
+                        urineMl = o.optDouble("urine_ml", 0.0),
+                        bowelCount = o.optInt("bowel_count", 0)
+                    )
+                )
+            }
+        }
+    }
+
     fun circles(): List<Circle> = api.get("circles").array("circles").let { a ->
         (0 until a.length()).map { i -> a.getJSONObject(i).toCircle() }
     }

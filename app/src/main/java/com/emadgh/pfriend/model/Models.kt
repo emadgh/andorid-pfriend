@@ -39,3 +39,5 @@ data class Circle(
 data class CircleMember(val id: Long, val username: String, val displayName: String)
 
 data class CircleDetail(val circle: Circle, val members: List<CircleMember>)
+
+data class ComparisonRow(val user: User, val summary: DailySummary)

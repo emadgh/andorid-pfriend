@@ -104,6 +104,38 @@ try {
             $stmt->execute([$userId]); $s=$stmt->fetch();
             json_response(['ok'=>true,'summary'=>['water_ml'=>(float)$s['water_ml'],'food_g'=>(float)$s['food_g'],'urine_count'=>(int)$s['urine_count'],'urine_ml'=>(float)$s['urine_ml'],'bowel_count'=>(int)$s['bowel_count']]]);
 
+        case 'compare':
+            $me = current_user();
+            $circleId = (int)($_GET['circle_id'] ?? 0);
+            $args = [];
+            $join = '';
+            if ($circleId > 0) {
+                $membership = db()->prepare('SELECT 1 FROM circle_members WHERE circle_id=? AND user_id=?');
+                $membership->execute([$circleId, (int)$me['id']]);
+                if (!$membership->fetchColumn()) fail('Circle not found or you are not a member.', 404);
+                $join = ' JOIN circle_members cm ON cm.user_id=u.id AND cm.circle_id=? ';
+                $args[] = $circleId;
+            }
+            $sql = "SELECT u.id,u.username,u.display_name,
+                COALESCE(SUM(CASE WHEN e.type='water' THEN e.amount_value ELSE 0 END),0) water_ml,
+                COALESCE(SUM(CASE WHEN e.type='food' THEN e.amount_value ELSE 0 END),0) food_g,
+                SUM(CASE WHEN e.type='urine' THEN 1 ELSE 0 END) urine_count,
+                COALESCE(SUM(CASE WHEN e.type='urine' THEN e.amount_value ELSE 0 END),0) urine_ml,
+                SUM(CASE WHEN e.type='bowel' THEN 1 ELSE 0 END) bowel_count
+                FROM users u $join
+                LEFT JOIN entries e ON e.user_id=u.id AND e.deleted_at IS NULL
+                    AND e.occurred_at>=CURDATE() AND e.occurred_at<DATE_ADD(CURDATE(),INTERVAL 1 DAY)
+                GROUP BY u.id,u.username,u.display_name
+                ORDER BY u.display_name,u.username LIMIT 500";
+            $stmt = db()->prepare($sql); $stmt->execute($args);
+            $rows = array_map(fn($r)=>[
+                'id'=>(int)$r['id'],'username'=>$r['username'],'display_name'=>$r['display_name'],
+                'water_ml'=>(float)$r['water_ml'],'food_g'=>(float)$r['food_g'],
+                'urine_count'=>(int)$r['urine_count'],'urine_ml'=>(float)$r['urine_ml'],
+                'bowel_count'=>(int)$r['bowel_count']
+            ], $stmt->fetchAll());
+            json_response(['ok'=>true,'comparison'=>$rows]);
+
         case 'follow_toggle':
             require_method('POST');
             $me=current_user(); $b=input_json(); $target=(int)($b['user_id']??0);

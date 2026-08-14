@@ -3,7 +3,7 @@
 Native Android client written in Kotlin + Jetpack Compose. No WebView, HTML, Flutter or React Native.
 
 ## Build
-Requirements: JDK 17+, Android SDK 36, Build Tools 36.0.0, Gradle 9.5.0. The project uses AGP 9 built-in Kotlin with the Compose compiler plugin.
+Requirements: JDK 17+, Android SDK 37, Build Tools 36.0.0, Gradle 9.5.0. The project uses AGP 9 built-in Kotlin with the Compose compiler plugin. `targetSdk` remains 36.
 
 ```bash
 gradle :app:assembleDebug
